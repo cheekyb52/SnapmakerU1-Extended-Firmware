@@ -47,7 +47,7 @@ jobs:
           set -euo pipefail
           cat vars.mk >> "$GITHUB_ENV"
           base_version=$(sed -n 's/^FIRMWARE_VERSION=//p' vars.mk)
-          echo "GIT_VERSION=${base_version}-cheekyb52-calibration-${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
+          echo "GIT_VERSION=${base_version}-cheekyb52-calibration-${GITHUB_RUN_NUMBER}.${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_ENV"
 
       - name: Restore original firmware download
         uses: actions/cache@v4
@@ -100,15 +100,19 @@ jobs:
       - name: Record firmware checksum and build identity
         shell: bash
         run: |
-          set -euo pipefail
+          ./dev.sh bash -euo pipefail -c '
           cd firmware
           sha256sum U1_calibration.bin > U1_calibration.bin.sha256
-          printf 'profile=extended-cheeky_b52\nsource_commit=%s\nversion=%s\n' "$GITHUB_SHA" "$GIT_VERSION" > build-info.txt
+          printf "profile=extended-cheeky_b52\nsource_commit=%s\nversion=%s\n" "$(git rev-parse HEAD)" "$GIT_VERSION" > build-info.txt
+          cp ../overlays/mods/cheeky_b52/README.md TESTING.md
+          cp ../overlays/mods/cheeky_b52/NOTICE.md NOTICE.md
+          cp ../LICENSE LICENSE
+          '
 
       - name: Upload firmware and verification records
         uses: actions/upload-artifact@v4
         with:
-          name: calibration-usermod-${{ github.run_number }}
+          name: calibration-usermod-${{ github.run_number }}-${{ github.run_attempt }}
           if-no-files-found: error
           retention-days: 14
           path: |
@@ -116,3 +120,65 @@ jobs:
             firmware/U1_calibration.bin.sha256
             firmware/payload-sha256.txt
             firmware/build-info.txt
+            firmware/TESTING.md
+            firmware/NOTICE.md
+            firmware/LICENSE
+
+  publish:
+    name: Publish experimental test build
+    needs: build
+    if: github.repository == 'cheekyb52/SnapmakerU1-Extended-Firmware'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - name: Download verified build assets
+        uses: actions/download-artifact@v4
+        with:
+          name: calibration-usermod-${{ github.run_number }}-${{ github.run_attempt }}
+          path: release-assets
+
+      - name: Check downloaded firmware checksum
+        working-directory: release-assets
+        run: sha256sum --check U1_calibration.bin.sha256
+
+      - name: Publish personal testing prerelease
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: cheekyb52/SnapmakerU1-Extended-Firmware
+        run: |
+          set -euo pipefail
+          tag="calibration-test-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}"
+          notes_file="$RUNNER_TEMP/calibration-release-notes.md"
+          cat > "$notes_file" <<'NOTES'
+          Experimental community test build of the independent tool calibration usermod.
+
+          - Independent T1/T2/T3 calibration preserves the other three tools and shared reference.
+          - T0 displays a warning to use stock four-tool calibration.
+          - Clean/validate checks all six tool pairs without saving calibration.
+
+          The calibration payload completed the planned live tests on one U1 using the reviewed PR760 source set, including an operator-flashed local image. This CI image is built with the same calibration payload; all five files were independently verified from its packed firmware. Wider printer/firmware coverage is still being collected.
+
+          Read TESTING.md and obtain verified configuration/native backups before flashing or saving calibration. Use temperatures appropriate for the loaded material. No debug/factory mode is required.
+
+          Full instructions, exact source profiles, test results and rollback guidance:
+          https://github.com/cheekyb52/Snapmaker-U1-Single-Tool-Calibration
+
+          Report results and issues in the standalone calibration repository, including firmware build, tool tested and any error text. Exclude credentials, device addresses and raw calibration tables. Upstream submission is deferred while community testing is collected.
+          NOTES
+          printf '\nBuild source commit: `%s`\n' "$GITHUB_SHA" >> "$notes_file"
+          gh release create "$tag" \
+            release-assets/U1_calibration.bin \
+            release-assets/U1_calibration.bin.sha256 \
+            release-assets/payload-sha256.txt \
+            release-assets/build-info.txt \
+            release-assets/TESTING.md \
+            release-assets/NOTICE.md \
+            release-assets/LICENSE \
+            --repo "$GH_REPO" \
+            --target "$GITHUB_SHA" \
+            --title "Independent tool calibration — experimental test build ${GITHUB_RUN_NUMBER}.${GITHUB_RUN_ATTEMPT}" \
+            --notes-file "$notes_file" \
+            --prerelease --latest=false
