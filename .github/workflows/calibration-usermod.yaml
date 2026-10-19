@@ -61,6 +61,15 @@ jobs:
           path: tmp/kernel/
           key: calibration-kernel-${{ runner.os }}-${{ runner.arch }}-${{ env.KERNEL_SHA }}
 
+      - name: Reject Windows line endings in usermod scripts
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for path in Path("overlays/mods/cheeky_b52").rglob("*.sh"):
+              assert b"\r" not in path.read_bytes(), str(path)
+          print("Usermod shell scripts use Unix line endings")
+          PY
+
       - name: Build tools
         run: ./dev.sh make tools
 
