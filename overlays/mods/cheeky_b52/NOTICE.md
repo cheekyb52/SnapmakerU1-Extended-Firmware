@@ -1,6 +1,8 @@
 # Source attribution
 
-**Modified calibration work: 0.2.0-dev1 | Updated: 2026-10-17**
+**Native work: 0.2.0-dev1 | CFG: 0.1.1 | Updated: 2026-10-18**
+
+The 2026-10-18 macro revision starts secondary-tool calibration directly by default. Backup acknowledgement is optional; native source changes are unchanged.
 
 This usermod is distributed under GPL-3.0. The complete license is available in
 the [standalone project](https://github.com/cheekyb52/Snapmaker-U1-Single-Tool-Calibration/blob/main/LICENSE).

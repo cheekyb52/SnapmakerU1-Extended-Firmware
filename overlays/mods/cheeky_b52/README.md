@@ -1,6 +1,6 @@
 # Independent tool calibration
 
-**Project payload: 0.2.0-dev1 | Updated: 2026-10-17**
+**Project: 0.2.0-dev2 | CFG: 0.1.1 | Updated: 2026-10-18**
 
 Optional usermod maintained by cheekyb52. Compose it with the existing extended
 firmware using `PROFILE=extended-cheeky_b52`. This adds no new base firmware profile.
@@ -23,7 +23,12 @@ and stock command defaults remain in use.
 ## Build
 
 Place this directory at `overlays/mods/cheeky_b52/` in the Extended Firmware repository.
-The tested upstream commit is `4bd40f7eb4e396d275c7ede0b7f15d0788588696`.
+The live-tested upstream commit is `4bd40f7eb4e396d275c7ede0b7f15d0788588696`.
+The current build base is synced to upstream `b73cfc70e343a0f4bf5b178481818ef1175d3918`.
+The intervening changes add a separate optional multiACE integration and documentation/CI;
+the calibration native sources and normal extended build inputs are unchanged.
+This image uses only `extended-cheeky_b52`; combining source-replacing mods requires
+separate review.
 
 ```sh
 ./dev.sh make tools
@@ -44,10 +49,11 @@ factory mode. After installation verify native capability, saved calibration,
 the shared reference and all applied offsets. After startup, wait for automatic
 tool activation and a matching G-code origin as well as Klipper readiness.
 
-For independent calibration, T0 must remain an unchanged reference. Acknowledge
-the verified session backup with `OFFSET_ARM_SAVE BACKUP=<verified-backup-timestamp>`;
-this clears on restart and does not create or verify a backup. Press the desired
-tool button, clean each presented nozzle, and press `OFFSET_CONTINUE`. Remove the
+For independent calibration, T0 must remain an unchanged reference. Press the desired
+tool button directly; no separate arming command is required by default. Sites may
+explicitly enable `variable_require_backup_arm: True` to retain the optional
+`OFFSET_ARM_SAVE BACKUP=<verified-backup-timestamp>` acknowledgement. That option
+does not create or verify a backup and clears on restart. Then clean each presented nozzle, and press `OFFSET_CONTINUE`. Remove the
 PEI plate and clear the ring when prompted, then confirm to begin measurement.
 Custom confirmations use the web console; the stock touchscreen controller stays idle.
 
@@ -76,7 +82,7 @@ This establishes behavior on the tested printer/source set. The owner reports
 successful-looking prints using the macros; measured alignment-artifact testing
 and live interruption during active probing are outside the completed scope.
 Speed tuning is deferred: retain ten calibration points, six validation points
-and three XY repeats. The shared macro CFG remains version 0.1.0.
+and three XY repeats. Those live results used CFG 0.1.0. Current CFG 0.1.1 changes the default button-start policy only; the native payload remains 0.2.0-dev1. The new CFG has offline coverage; live acceptance of that revision is pending.
 
 Full instructions, source hashes, regression sources, results and rollback guidance:
 [standalone project](https://github.com/cheekyb52/Snapmaker-U1-Single-Tool-Calibration).

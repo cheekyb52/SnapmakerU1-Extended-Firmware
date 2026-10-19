@@ -83,7 +83,7 @@ jobs:
               "home/lava/klipper/klippy/extras/extruder_config_bak.py": "21cb0c7037eb0c2ee195704e8e81dfd5fad307ff5cb16a0c3ed981b006d0f302",
               "home/lava/klipper/klippy/extras/probe_inductance_coil.py": "05196461cea7160eb9ffee5907a2332d12d1740349d8e65b1f3d7671fca545c8",
               "home/lava/klipper/klippy/queuefile.py": "fce61a3256e376b566b8676c8b95f9c3082846881995af8cb0369af581938157",
-              "usr/local/share/firmware-config/extended/klipper/70_tool_offsets.cfg": "5d73c5f489bccd124a6343f8b32968d52f29f8ab353cc45607f0ba556ac42ccd",
+              "usr/local/share/firmware-config/extended/klipper/70_tool_offsets.cfg": "ea4733329ae5575a5b42d26284f8d79178f5153bdb2cbe832907df749625cde0",
           }
           image = "tmp/calibration-verification/rk-unpacked/rootfs.img"
           lines = []
@@ -107,6 +107,7 @@ jobs:
           cp ../overlays/mods/cheeky_b52/README.md TESTING.md
           cp ../overlays/mods/cheeky_b52/NOTICE.md NOTICE.md
           cp ../LICENSE LICENSE
+          cp ../overlays/mods/cheeky_b52/02-macros/root/usr/local/share/firmware-config/extended/klipper/70_tool_offsets.cfg 70_tool_offsets.cfg
           '
 
       - name: Upload firmware and verification records
@@ -123,6 +124,7 @@ jobs:
             firmware/TESTING.md
             firmware/NOTICE.md
             firmware/LICENSE
+            firmware/70_tool_offsets.cfg
 
   publish:
     name: Publish experimental test build
@@ -155,13 +157,13 @@ jobs:
           cat > "$notes_file" <<'NOTES'
           Experimental community test build of the independent tool calibration usermod.
 
-          - Independent T1/T2/T3 calibration preserves the other three tools and shared reference.
+          - Press T1/T2/T3 directly to start; separate backup arming is optional and disabled by default. Independent saves preserve the other three tools and shared reference.
           - T0 displays a warning to use stock four-tool calibration.
           - Clean/validate checks all six tool pairs without saving calibration.
 
-          The calibration payload completed the planned live tests on one U1 using the reviewed PR760 source set, including an operator-flashed local image. This CI image is built with the same calibration payload; all five files were independently verified from its packed firmware. Wider printer/firmware coverage is still being collected.
+          The unchanged native payload completed the planned live tests on one U1 using the reviewed PR760 source set, including an operator-flashed local image. CFG 0.1.1 updates the default button-start policy; 96 offline checks pass, but this CFG revision has not yet completed live acceptance. All five files were independently verified from this packed firmware. Wider printer/firmware coverage is still being collected.
 
-          Read TESTING.md and obtain verified configuration/native backups before flashing or saving calibration. Use temperatures appropriate for the loaded material. No debug/factory mode is required.
+          Read TESTING.md and obtain verified configuration/native backups before installation. Existing calibration-test-2-1 users can update the attached 70_tool_offsets.cfg without reflashing: back up the existing CFG/calibration data, review the CFG diff, replace extended/klipper/70_tool_offsets.cfg and restart Klipper while idle. The default calibration buttons do not require OFFSET_ARM_SAVE. Use temperatures appropriate for the loaded material. No debug/factory mode is required.
 
           Full instructions, exact source profiles, test results and rollback guidance:
           https://github.com/cheekyb52/Snapmaker-U1-Single-Tool-Calibration
@@ -177,6 +179,7 @@ jobs:
             release-assets/TESTING.md \
             release-assets/NOTICE.md \
             release-assets/LICENSE \
+            release-assets/70_tool_offsets.cfg \
             --repo "$GH_REPO" \
             --target "$GITHUB_SHA" \
             --title "Independent tool calibration — experimental test build ${GITHUB_RUN_NUMBER}.${GITHUB_RUN_ATTEMPT}" \
