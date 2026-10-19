@@ -13,7 +13,7 @@ permissions:
 
 concurrency:
   group: calibration-usermod-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -94,7 +94,9 @@ jobs:
                   compile(content, name, "exec")
               lines.append(digest + "  " + name)
           pathlib.Path("firmware/payload-sha256.txt").write_text("\n".join(lines) + "\n")
-          print("All five packed-image payload checks passed")
+          cleanup = subprocess.check_output(["unsquashfs", "-cat", image, "usr/local/share/firmware-config/force-cleanup.sha256"]).decode()
+          assert "5d73c5f489bccd124a6343f8b32968d52f29f8ab353cc45607f0ba556ac42ccd  klipper/70_tool_offsets.cfg" in cleanup.splitlines()
+          print("All five packed-image payload checks and stock CFG migration entry passed")
           '
 
       - name: Record firmware checksum and build identity
@@ -163,7 +165,7 @@ jobs:
 
           The unchanged native payload completed the planned live tests on one U1 using the reviewed PR760 source set, including an operator-flashed local image. CFG 0.1.1 updates the default button-start policy; 96 offline checks pass, but this CFG revision has not yet completed live acceptance. All five files were independently verified from this packed firmware. Wider printer/firmware coverage is still being collected.
 
-          Read TESTING.md and obtain verified configuration/native backups before installation. Existing calibration-test-2-1 users can update the attached 70_tool_offsets.cfg without reflashing: back up the existing CFG/calibration data, review the CFG diff, replace extended/klipper/70_tool_offsets.cfg and restart Klipper while idle. The default calibration buttons do not require OFFSET_ARM_SAVE. Use temperatures appropriate for the loaded material. No debug/factory mode is required.
+          Read TESTING.md and obtain verified configuration/native backups before installation. Flashing this build updates an unmodified packaged CFG 0.1.0 automatically using stock checksum cleanup. Custom CFGs are preserved and need review against the new .default. Existing calibration-test-2-1 users can also update the attached 70_tool_offsets.cfg without reflashing: back up the existing CFG/calibration data, review the CFG diff, replace extended/klipper/70_tool_offsets.cfg and restart Klipper while idle. The default calibration buttons do not require OFFSET_ARM_SAVE. Use temperatures appropriate for the loaded material. No debug/factory mode is required.
 
           Full instructions, exact source profiles, test results and rollback guidance:
           https://github.com/cheekyb52/Snapmaker-U1-Single-Tool-Calibration

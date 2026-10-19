@@ -64,6 +64,11 @@ Validation defaults to 0.05 mm per axis. For example:
 CLEAN_AND_VALIDATE_OFFSETS TOL_X=0.05 TOL_Y=0.05 TOL_Z=0.05
 ```
 
+
+Firmware upgrades replace an unmodified packaged CFG 0.1.0 through the existing
+checksum-based config cleanup. Locally modified CFGs are preserved and receive
+a `.default` copy; review those customizations against CFG 0.1.1 before replacing.
+
 ## Tested status
 
 Planned testing completed on one U1 and the exact captured PR760 source set:
