@@ -18,6 +18,8 @@ on:
 
 jobs:
   deploy:
+    # Forks skip hosting unless the owner explicitly configures and enables it.
+    if: github.repository == 'paxx12-snapmaker-u1/SnapmakerU1-Extended-Firmware' || vars.ENABLE_CLOUDFLARE_DEPLOY == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
