@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+name: Calibration CFG migration checks
+on:
+  push:
+    branches:
+      - checks/calibration-cfg-migration
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  migration:
+    if: github.repository == 'cheekyb52/SnapmakerU1-Extended-Firmware'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify stock startup migration against packaged and customized CFGs
+        run: python3 -B .github/scripts/check_calibration_cfg_migration.py
