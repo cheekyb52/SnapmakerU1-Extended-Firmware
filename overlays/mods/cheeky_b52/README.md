@@ -1,6 +1,6 @@
 # Independent tool calibration
 
-**Project: 0.2.0-dev2 | CFG: 0.1.1 | Updated: 2026-10-18**
+**Project: 0.2.0-dev2 | CFG: 0.1.1 | Updated: 2026-10-27**
 
 Optional usermod maintained by cheekyb52. Compose it with the existing extended
 firmware using `PROFILE=extended-cheeky_b52`. This adds no new base firmware profile.
@@ -24,9 +24,12 @@ and stock command defaults remain in use.
 
 Place this directory at `overlays/mods/cheeky_b52/` in the Extended Firmware repository.
 The live-tested upstream commit is `4bd40f7eb4e396d275c7ede0b7f15d0788588696`.
-The current build base is synced to upstream `b73cfc70e343a0f4bf5b178481818ef1175d3918`.
-The intervening changes add a separate optional multiACE integration and documentation/CI;
-the calibration native sources and normal extended build inputs are unchanged.
+The current build base is synced to upstream `417e6394f62366e010a3f76f8e567f67db770165`
+(2026-10-27). The latest upstream changes cover filament-management, camera settings,
+and build workflows. The calibration native sources and stock calibration components
+are unchanged; all exact source and packed-payload guards remain enabled.
+The new full image requires its own hardware acceptance; earlier live results remain
+specific to the previously tested builds.
 This image uses only `extended-cheeky_b52`; combining source-replacing mods requires
 separate review.
 
