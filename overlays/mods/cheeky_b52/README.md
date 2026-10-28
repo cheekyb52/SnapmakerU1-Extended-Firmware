@@ -1,6 +1,6 @@
 # Independent tool calibration
 
-**Project: 0.2.0-dev2 | CFG: 0.1.1 | Updated: 2026-10-27**
+**Project: 0.2.0-dev3 | CFG: 0.1.1 | Nozzle workaround: 0.1.0 | Updated: 2026-10-28**
 
 Optional usermod maintained by cheekyb52. Compose it with the existing extended
 firmware using `PROFILE=extended-cheeky_b52`. This adds no new base firmware profile.
@@ -20,14 +20,39 @@ persistence in three Python files. Stock full calibration saves all four results
 and retires that reference. Native probing, heating, wiping and docking algorithms
 and stock command defaults remain in use.
 
+## Mixed-nozzle print-start workaround
+
+This build also removes the faulty nozzle-diameter comparison in
+`klippy/extras/print_task_config.py`, inside `cmd_SET_PRINT_TASK_PARAMETERS`.
+Stock code compares every used tool against `nozzle_diameter[0]`; mixed
+0.4/0.4/0.8/0.8 mm setups can therefore fail even when their configured sizes agree.
+
+Stage `03-mixed-nozzle` removes only that diameter-validation block. Filament
+volume-type and material/nozzle compatibility checks remain active. Keep the real
+nozzle sizes correctly configured in both the printer and slicer; this build no
+longer enforces that print-start diameter comparison.
+
+The change is baked into the firmware's Python file and survives normal reboots
+of this image. Installing only the macro CFG cannot provide it. Flash this full
+image after obtaining verified configuration/native backups. Installing another
+firmware image may restore its original check.
+
+The stage rejects an unreviewed source hash before patching, checks the modified
+hash and Python syntax, and runs eight checks against the actual validation AST.
+They reproduce the stock false mismatch, exercise mixed/uniform and unused-tool
+cases, preserve the rest of the module, and retain volume/material rejection.
+The previous manual workaround has been used on one U1; this integrated image
+still needs its own hardware acceptance.
+
 ## Build
 
 Place this directory at `overlays/mods/cheeky_b52/` in the Extended Firmware repository.
 The live-tested upstream commit is `4bd40f7eb4e396d275c7ede0b7f15d0788588696`.
-The current build base is synced to upstream `417e6394f62366e010a3f76f8e567f67db770165`
-(2026-10-27). The latest upstream changes cover filament-management, camera settings,
-and build workflows. The calibration native sources and stock calibration components
-are unchanged; all exact source and packed-payload guards remain enabled.
+The current build base is synced to upstream `31890d6c92a939aa13458002f66c50a797008308`
+(2026-10-28), including the latest OctoEverywhere packaging update.
+The calibration native sources and stock calibration components are unchanged.
+Stage `03-mixed-nozzle` separately changes the print-start nozzle check.
+All exact source and packed-payload guards remain enabled.
 The new full image requires its own hardware acceptance; earlier live results remain
 specific to the previously tested builds.
 This image uses only `extended-cheeky_b52`; combining source-replacing mods requires
