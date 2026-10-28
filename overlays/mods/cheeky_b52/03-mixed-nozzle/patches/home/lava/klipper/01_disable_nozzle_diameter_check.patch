@@ -1,0 +1,23 @@
+# Mixed-nozzle print-start workaround 0.1.0 | Updated: 2026-10-28
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Removes only the invalid first-nozzle diameter comparison.
+diff --git a/klippy/extras/print_task_config.py b/klippy/extras/print_task_config.py
+--- a/klippy/extras/print_task_config.py
++++ b/klippy/extras/print_task_config.py
+@@ -1405,14 +1405,8 @@
+                 if tmp_print_task_config_2['filament_used_g'][i] > 0.0001 or tmp_print_task_config_2['filament_used_mm'][i] > 0.0001:
+                     tmp_print_task_config['extruders_used'][tmp_print_task_config['extruder_map_table'][i]] = True
+ 
+-            # check nozzle diameter
+-            if nozzle_diameter is not None:
+-                for i in range(PHYSICAL_EXTRUDER_NUM):
+-                    if tmp_print_task_config['extruders_used'][i]:
+-                        if abs(tmp_print_task_config_2['nozzle_diameter'][0] - actual_nozzle_diameter[i]) > 0.001:
+-                            exception_code = 14
+-                            raise gcmd.error(f"[print_task_config] nozzle diameter mismatch:" +
+-                                                f"f{i}_{tmp_print_task_config_2['nozzle_diameter'][0]} != e{i}_{actual_nozzle_diameter[i]}")
++            # Mixed-nozzle workaround 0.1.0 (2026-10-28): omit the first-nozzle diameter check.
++            # Actual nozzle settings and the remaining validation are retained.
+ 
+             # check filament volume type
+             if filament_volume_type is not None:

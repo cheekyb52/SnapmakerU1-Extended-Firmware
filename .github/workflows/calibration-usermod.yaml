@@ -82,7 +82,7 @@ jobs:
       - name: Unpack generated firmware
         run: ./dev.sh scripts/helpers/unpack_firmware.sh "$PWD/firmware/U1_calibration.bin" "$PWD/tmp/calibration-verification"
 
-      - name: Verify five files from the packed image
+      - name: Verify six files from the packed image
         shell: bash
         run: |
           ./dev.sh python3 -B -c '
@@ -91,6 +91,7 @@ jobs:
               "home/lava/klipper/klippy/kinematics/extruder.py": "da375bfb97d065a1511829ae1f0d3d44531b18c4c39246439812a8989ceb5cae",
               "home/lava/klipper/klippy/extras/extruder_config_bak.py": "21cb0c7037eb0c2ee195704e8e81dfd5fad307ff5cb16a0c3ed981b006d0f302",
               "home/lava/klipper/klippy/extras/probe_inductance_coil.py": "05196461cea7160eb9ffee5907a2332d12d1740349d8e65b1f3d7671fca545c8",
+              "home/lava/klipper/klippy/extras/print_task_config.py": "1ef6e8ade716fab99715e00e58502016197f43d3147620018a34c681e9d312eb",
               "home/lava/klipper/klippy/queuefile.py": "fce61a3256e376b566b8676c8b95f9c3082846881995af8cb0369af581938157",
               "usr/local/share/firmware-config/extended/klipper/70_tool_offsets.cfg": "ea4733329ae5575a5b42d26284f8d79178f5153bdb2cbe832907df749625cde0",
           }
@@ -105,7 +106,7 @@ jobs:
           pathlib.Path("firmware/payload-sha256.txt").write_text("\n".join(lines) + "\n")
           cleanup = subprocess.check_output(["unsquashfs", "-cat", image, "usr/local/share/firmware-config/force-cleanup.sha256"]).decode()
           assert "5d73c5f489bccd124a6343f8b32968d52f29f8ab353cc45607f0ba556ac42ccd  klipper/70_tool_offsets.cfg" in cleanup.splitlines()
-          print("All five packed-image payload checks and stock CFG migration entry passed")
+          print("All six packed-image payload checks and stock CFG migration entry passed")
           '
 
       - name: Record firmware checksum and build identity
@@ -171,10 +172,11 @@ jobs:
           - Press T1/T2/T3 directly to start; separate backup arming is optional and disabled by default. Independent saves preserve the other three tools and shared reference.
           - T0 displays a warning to use stock four-tool calibration.
           - Clean/validate checks all six tool pairs without saving calibration.
+          - The mixed-nozzle print-start workaround is baked into print_task_config.py; it removes only the faulty diameter comparison and retains volume/material checks.
 
-          The unchanged native payload completed the planned live tests on one U1 using the reviewed PR760 source set, including an operator-flashed local image. CFG 0.1.1 updates the default button-start policy; 96 offline checks pass, but this CFG revision has not yet completed live acceptance. All five files were independently verified from this packed firmware. Wider printer/firmware coverage is still being collected.
+          The calibration native payload and CFG 0.1.1 are unchanged. This image adds the separately guarded mixed-nozzle workaround, with eight actual-validation checks run during the build. All six payload files were independently verified from the packed firmware. Earlier calibration evidence includes 96 offline checks and one-printer live acceptance of the prior payload. This integrated image and the newer CFG still require their own hardware acceptance; wider coverage is being collected.
 
-          Read TESTING.md and obtain verified configuration/native backups before installation. Flashing this build updates an unmodified packaged CFG 0.1.0 automatically using stock checksum cleanup. Custom CFGs are preserved and need review against the new .default. Existing calibration-test-2-1 users can also update the attached 70_tool_offsets.cfg without reflashing: back up the existing CFG/calibration data, review the CFG diff, replace extended/klipper/70_tool_offsets.cfg and restart Klipper while idle. The default calibration buttons do not require OFFSET_ARM_SAVE. Use temperatures appropriate for the loaded material. No debug/factory mode is required.
+          Read TESTING.md and obtain verified configuration/native backups before installation. Flashing this build updates an unmodified packaged CFG 0.1.0 automatically using stock checksum cleanup. Custom CFGs are preserved and need review against the new .default. The mixed-nozzle Python change requires the full firmware image; the CFG alone cannot apply it. For the separate button-start macro update, existing calibration-test-2-1 users can update the attached 70_tool_offsets.cfg without reflashing: back up the existing CFG/calibration data, review the CFG diff, replace extended/klipper/70_tool_offsets.cfg and restart Klipper while idle. The default calibration buttons do not require OFFSET_ARM_SAVE. Keep the actual nozzle sizes correctly configured in both printer and slicer: the faulty print-start diameter check is disabled. Use temperatures appropriate for the loaded material. No debug/factory mode is required.
 
           Full instructions, exact source profiles, test results and rollback guidance:
           https://github.com/cheekyb52/Snapmaker-U1-Single-Tool-Calibration
@@ -193,6 +195,6 @@ jobs:
             release-assets/70_tool_offsets.cfg \
             --repo "$GH_REPO" \
             --target "$GITHUB_SHA" \
-            --title "Independent tool calibration — experimental test build ${GITHUB_RUN_NUMBER}.${GITHUB_RUN_ATTEMPT}" \
+            --title "Independent tool calibration + mixed nozzles — experimental test build ${GITHUB_RUN_NUMBER}.${GITHUB_RUN_ATTEMPT}" \
             --notes-file "$notes_file" \
             --prerelease --latest=false

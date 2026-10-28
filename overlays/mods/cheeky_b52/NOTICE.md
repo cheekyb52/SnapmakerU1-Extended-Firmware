@@ -1,6 +1,6 @@
 # Source attribution
 
-**Native work: 0.2.0-dev1 | CFG: 0.1.1 | Updated: 2026-10-18**
+**Calibration native: 0.2.0-dev1 | CFG: 0.1.1 | Nozzle workaround: 0.1.0 | Updated: 2026-10-28**
 
 The 2026-10-18 macro revision starts secondary-tool calibration directly by default. Backup acknowledgement is optional; native source changes are unchanged.
 
@@ -25,3 +25,12 @@ Upstream source projects:
 Thanks to Paxx and contributors for the firmware builder, numbered overlays and
 documentation conventions. This optional mod is independently maintained;
 affiliation with or endorsement by the upstream projects is not implied.
+
+## Mixed-nozzle modification — 2026-10-28
+
+The additional `03-mixed-nozzle` stage modifies
+`klippy/extras/print_task_config.py` by removing only the faulty first-nozzle
+diameter check in `cmd_SET_PRINT_TASK_PARAMETERS`. Its original GPLv3 notice and
+the rest of its code are retained. The stage adds exact source/modified hashes
+and isolated validation tests. The calibration native patch and CFG are unchanged.
+This workaround is included only when composing this personal usermod image.
