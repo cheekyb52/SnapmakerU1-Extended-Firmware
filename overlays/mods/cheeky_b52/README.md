@@ -1,6 +1,6 @@
 # Independent tool calibration
 
-**Project: 0.2.0-dev3 | CFG: 0.1.1 | Nozzle workaround: 0.1.0 | Updated: 2026-10-28**
+**Project: 0.2.0-dev3 | CFG: 0.1.1 | Nozzle workaround: 0.1.0 | Updated: 2026-10-29**
 
 Optional usermod maintained by cheekyb52. Compose it with the existing extended
 firmware using `PROFILE=extended-cheeky_b52`. This adds no new base firmware profile.
@@ -14,6 +14,10 @@ firmware using `PROFILE=extended-cheeky_b52`. This adds no new base firmware pro
 | `CLEAN_AND_VALIDATE_OFFSETS` | Clean all four tools and compare all six pairs against XYZ tolerances without saving |
 | `OFFSET_CONTINUE` | Confirm manual cleaning or PEI plate removal |
 | `OFFSET_ABORT` | Exit a waiting custom cycle; completed saves remain saved |
+
+**Macro buttons:** These are clickable Klipper macro buttons. In Mainsail, put all
+seven buttons in a **Tool Calibration** macro group (Interface Settings → Macros
+→ Management: Expert → Add Group) and enable **Standby** visibility.
 
 The native patch adds opt-in `PRESERVE_REFERENCE=1` and atomic pinned-reference
 persistence in three Python files. Stock full calibration saves all four results
@@ -48,8 +52,11 @@ still needs its own hardware acceptance.
 
 Place this directory at `overlays/mods/cheeky_b52/` in the Extended Firmware repository.
 The live-tested upstream commit is `4bd40f7eb4e396d275c7ede0b7f15d0788588696`.
-The current build base is synced to upstream `31890d6c92a939aa13458002f66c50a797008308`
-(2026-10-28), including the latest OctoEverywhere packaging update.
+The current build base is synced to upstream `2c80e3dc495fdf724bc53c5c35c875010ee1668f`
+(2026-10-29), the final upstream 2.0 source before the 2.1 transition.
+This includes HelixScreen 1.0.7, the v4l2-mpp update, and preservation of the
+extra MCU payload and header version when repacking firmware.
+The 2.1 port is maintained separately; this build remains based on 2.0.0.205.
 The calibration native sources and stock calibration components are unchanged.
 Stage `03-mixed-nozzle` separately changes the print-start nozzle check.
 All exact source and packed-payload guards remain enabled.

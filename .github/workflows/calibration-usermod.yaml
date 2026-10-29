@@ -76,6 +76,9 @@ jobs:
       - name: Download and verify original firmware
         run: ./dev.sh make firmware
 
+      - name: Verify original firmware container round trips
+        run: ./dev.sh make test
+
       - name: Build extended firmware with calibration usermod
         run: ./dev.sh make build PROFILE=extended-cheeky_b52 OUTPUT_FILE=firmware/U1_calibration.bin
 
@@ -95,6 +98,11 @@ jobs:
               "home/lava/klipper/klippy/queuefile.py": "fce61a3256e376b566b8676c8b95f9c3082846881995af8cb0369af581938157",
               "usr/local/share/firmware-config/extended/klipper/70_tool_offsets.cfg": "ea4733329ae5575a5b42d26284f8d79178f5153bdb2cbe832907df749625cde0",
           }
+          original = pathlib.Path("tools/tmp/test")
+          packed = pathlib.Path("tmp/calibration-verification")
+          for name in ("UPFILE_MAGIC_VER", "UPFILE_EXT", "gd32h757.bin"):
+              assert (original / name).read_bytes() == (packed / name).read_bytes(), name
+          print("Original header version and extra MCU payload preserved")
           image = "tmp/calibration-verification/rk-unpacked/rootfs.img"
           lines = []
           for name, digest in expected.items():
